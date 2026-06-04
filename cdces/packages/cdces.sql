@@ -1620,7 +1620,7 @@ $function$
 
 
 /* */
-CREATE FUNCTION new_ces(agrid numeric, cd_sum numeric, pay_sum numeric DEFAULT NULL::numeric, mda_num numeric DEFAULT NULL::numeric, curclum numeric DEFAULT NULL::numeric, curcliacc character varying DEFAULT NULL::character varying, curstatus numeric DEFAULT 0, pzid numeric DEFAULT NULL::numeric, pdend date DEFAULT NULL::date, pagrmnt character varying DEFAULT NULL::character varying, pnumarchiv character varying DEFAULT NULL::character varying, pdsign date DEFAULT NULL::date, pdpurch date DEFAULT NULL::date, pmpurch numeric DEFAULT NULL::numeric, pdfirstpay date DEFAULT NULL::date, pmfirstpay numeric DEFAULT NULL::numeric, pdfirstpay_a date DEFAULT NULL::date, pntimey numeric DEFAULT NULL::numeric, pntimem numeric DEFAULT NULL::numeric, pntimed numeric DEFAULT NULL::numeric, pmisum numeric DEFAULT NULL::numeric, pmosum numeric DEFAULT NULL::numeric, pmoisum numeric DEFAULT NULL::numeric, pmfasum numeric DEFAULT NULL::numeric, pmfisum numeric DEFAULT NULL::numeric, pmi2sum numeric DEFAULT NULL::numeric, pmoi2sum numeric DEFAULT NULL::numeric, pmbonsum numeric DEFAULT NULL::numeric, pncestype numeric DEFAULT NULL::numeric, pnkd numeric DEFAULT NULL::numeric, pcowd character DEFAULT NULL::bpchar, pcfr character DEFAULT NULL::bpchar, pprc numeric DEFAULT NULL::numeric, pndtn_a numeric DEFAULT NULL::numeric, pdoutfd date DEFAULT NULL::date)
+CREATE FUNCTION new_ces(agrid numeric, cd_sum numeric, pay_sum numeric DEFAULT NULL::numeric, mda_num numeric DEFAULT NULL::numeric, CurCliNum numeric DEFAULT NULL::numeric, curcliacc character varying DEFAULT NULL::character varying, curstatus numeric DEFAULT 0, pzid numeric DEFAULT NULL::numeric, pdend date DEFAULT NULL::date, pagrmnt character varying DEFAULT NULL::character varying, pnumarchiv character varying DEFAULT NULL::character varying, pdsign date DEFAULT NULL::date, pdpurch date DEFAULT NULL::date, pmpurch numeric DEFAULT NULL::numeric, pdfirstpay date DEFAULT NULL::date, pmfirstpay numeric DEFAULT NULL::numeric, pdfirstpay_a date DEFAULT NULL::date, pntimey numeric DEFAULT NULL::numeric, pntimem numeric DEFAULT NULL::numeric, pntimed numeric DEFAULT NULL::numeric, pmisum numeric DEFAULT NULL::numeric, pmosum numeric DEFAULT NULL::numeric, pmoisum numeric DEFAULT NULL::numeric, pmfasum numeric DEFAULT NULL::numeric, pmfisum numeric DEFAULT NULL::numeric, pmi2sum numeric DEFAULT NULL::numeric, pmoi2sum numeric DEFAULT NULL::numeric, pmbonsum numeric DEFAULT NULL::numeric, pncestype numeric DEFAULT NULL::numeric, pnkd numeric DEFAULT NULL::numeric, pcowd character DEFAULT NULL::bpchar, pcfr character DEFAULT NULL::bpchar, pprc numeric DEFAULT NULL::numeric, pndtn_a numeric DEFAULT NULL::numeric, pdoutfd date DEFAULT NULL::date)
 RETURNS 
    character varying
 AS 
@@ -1678,7 +1678,7 @@ BEGIN
       AgrSUM := 1;
    end if;
    -- CDTerms.NewAgrZ( ... )
-   New_AgrZ_Res := cdagr.NewAgrZ (AgrID, AgrSUM, Pay_Sum, MDA_Num, curclum, CurCliAcc, CurStatus, pZID, dEnd, pAGRMNT, pNUMARCHIV, pPRC );
+   New_AgrZ_Res := cdagr.NewAgrZ (AgrID, AgrSUM, Pay_Sum, MDA_Num, CurCliNum, CurCliAcc, CurStatus, pZID, dEnd, pAGRMNT, pNUMARCHIV, pPRC );
 
    --dbms_output.put_line('New_AgrZ_Res = '||New_AgrZ_Res);
    raise debug 'New_AgrZ_Res = %', New_AgrZ_Res;
