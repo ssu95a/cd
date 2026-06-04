@@ -1,25 +1,49 @@
 CREATE OR REPLACE PACKAGE CDCes
-   CREATE FUNCTION __init__()
-      RETURNS void
-   AS
-   $init$
---
--- ANT      202.11.02 (pg01.01.00)    
---
-  DECLARE
-    
-   c_Const_Prefix  CONSTANT VARCHAR := ML2.GetText ('cdces.c_Const_Prefix', 'CD Учет приобретения прав требования'); 
-   c_Error_Code    CONSTANT VARCHAR := '50200'; 
-   cVersion        CONSTANT VARCHAR := ' $Id: cdces.sql 65189 2024-11-02 11:38:59Z ant $';
-   cPkg_Name       CONSTANT VARCHAR := 'CDCes';
+   CREATE TYPE cdces.part_details AS (
+         agrid numeric(12,3),
+         part numeric(4,0),
+         pdbeg date,
+         pdend date,
+         ppi numeric(20,14),
+         ppfa numeric(20,14),
+         ppfi numeric(20,14),
+         pmsum numeric(16,2),
+         pmi numeric(16,2),
+         pmo numeric(16,2),
+         pmoi numeric(16,2),
+         pmfa numeric(16,2),
+         pmfi numeric(16,2),
+         pmi2 numeric(16,2),
+         pmoi2 numeric(16,2),
+         pmc numeric(16,2),
+         pnndo numeric(4,0),
+         pnndoi numeric(4,0),
+         ppio numeric(20,14),
+         pnndoio numeric(4,0),
+         pisprol bpchar(1),
+         pniclc numeric(16,2),
+         ppfi2 numeric(20,14)
+   )
 
-   -- Lora
-   isCDE           VARCHAR(10);  -- Флаг для ядра, показывает что удаление проводки инициировано кредитным модулем
-   isDBMS          BOOLEAN          := true;
-   ci_SUCCESS      constant integer := 0; -- успешное завершение
-   ci_OTHER_ERROR  constant integer := 8192;  -- прочая ошибка (неизвестной природы)
 
-   ActivMode      char(1) := 'R'; -- локальный флаг формирования действий "реально/декларативно"
+CREATE FUNCTION __init__()
+   RETURNS void
+AS
+$init$
+DECLARE
+ 
+c_Const_Prefix  CONSTANT VARCHAR := ML2.GetText ('cdces.c_Const_Prefix', 'CD Учет приобретения прав требования'); 
+c_Error_Code    CONSTANT VARCHAR := '50200'; 
+cVersion        CONSTANT VARCHAR := ' $Id: cdces.sql 65189 2024-11-02 11:38:59Z ant $';
+cPkg_Name       CONSTANT VARCHAR := 'CDCes';
+
+-- Lora
+isCDE           VARCHAR(10);  -- Флаг для ядра, показывает что удаление проводки инициировано кредитным модулем
+isDBMS          BOOLEAN          := true;
+ci_SUCCESS      constant integer := 0; -- успешное завершение
+ci_OTHER_ERROR  constant integer := 8192;  -- прочая ошибка (неизвестной природы)
+
+ActivMode       char(1) := 'R'; -- локальный флаг формирования действий "реально/декларативно"
 
 BEGIN
    RAISE DEBUG 'Package "%" - % - initialized', cPkg_Name, cVersion;
@@ -1709,7 +1733,7 @@ BEGIN
    else
 
       -- dbms_output.put_line(' ERROR - '||SQLERRM);
-      raise debug ' ERROR - %', 'SQLERRM';
+      raise debug ' ERROR - %', SQLERRM;
 
       if New_AgrZ_Res is NULL then
 
