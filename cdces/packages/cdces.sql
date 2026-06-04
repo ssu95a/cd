@@ -1620,7 +1620,45 @@ $function$
 
 
 /* */
-CREATE FUNCTION new_ces(agrid numeric, cd_sum numeric, pay_sum numeric DEFAULT NULL::numeric, mda_num numeric DEFAULT NULL::numeric, CurCliNum numeric DEFAULT NULL::numeric, curcliacc character varying DEFAULT NULL::character varying, curstatus numeric DEFAULT 0, pzid numeric DEFAULT NULL::numeric, pdend date DEFAULT NULL::date, pagrmnt character varying DEFAULT NULL::character varying, pnumarchiv character varying DEFAULT NULL::character varying, pdsign date DEFAULT NULL::date, pdpurch date DEFAULT NULL::date, pmpurch numeric DEFAULT NULL::numeric, pdfirstpay date DEFAULT NULL::date, pmfirstpay numeric DEFAULT NULL::numeric, pdfirstpay_a date DEFAULT NULL::date, pntimey numeric DEFAULT NULL::numeric, pntimem numeric DEFAULT NULL::numeric, pntimed numeric DEFAULT NULL::numeric, pmisum numeric DEFAULT NULL::numeric, pmosum numeric DEFAULT NULL::numeric, pmoisum numeric DEFAULT NULL::numeric, pmfasum numeric DEFAULT NULL::numeric, pmfisum numeric DEFAULT NULL::numeric, pmi2sum numeric DEFAULT NULL::numeric, pmoi2sum numeric DEFAULT NULL::numeric, pmbonsum numeric DEFAULT NULL::numeric, pncestype numeric DEFAULT NULL::numeric, pnkd numeric DEFAULT NULL::numeric, pcowd character DEFAULT NULL::bpchar, pcfr character DEFAULT NULL::bpchar, pprc numeric DEFAULT NULL::numeric, pndtn_a numeric DEFAULT NULL::numeric, pdoutfd date DEFAULT NULL::date)
+CREATE FUNCTION new_ces( 
+      agrid numeric, 
+      cd_sum numeric, 
+      pay_sum numeric DEFAULT NULL::numeric, 
+      mda_num numeric DEFAULT NULL::numeric, 
+      CurCliNum numeric DEFAULT NULL::numeric, 
+      curcliacc character varying DEFAULT NULL::character varying, 
+      curstatus numeric DEFAULT 0, 
+      pzid numeric DEFAULT NULL::numeric, 
+      pdend date DEFAULT NULL::date, 
+      pagrmnt character varying DEFAULT NULL::character varying, 
+      pnumarchiv character varying DEFAULT NULL::character varying, 
+      pdsign date DEFAULT NULL::date, 
+      pdpurch date DEFAULT NULL::date, 
+      pmpurch numeric DEFAULT NULL::numeric, 
+      pdfirstpay date DEFAULT NULL::date, 
+      pmfirstpay numeric DEFAULT NULL::numeric, 
+      pdfirstpay_a date DEFAULT NULL::date, 
+      pntimey numeric DEFAULT NULL::numeric, 
+      pntimem numeric DEFAULT NULL::numeric, 
+      pntimed numeric DEFAULT NULL::numeric, 
+      pmisum numeric DEFAULT NULL::numeric, 
+      pmosum numeric DEFAULT NULL::numeric, 
+      pmoisum numeric DEFAULT NULL::numeric, 
+      pmfasum numeric DEFAULT NULL::numeric, 
+      pmfisum numeric DEFAULT NULL::numeric, 
+      pmi2sum numeric DEFAULT NULL::numeric, 
+      pmoi2sum numeric DEFAULT NULL::numeric, 
+      pmbonsum numeric DEFAULT NULL::numeric, 
+      pncestype numeric DEFAULT NULL::numeric, 
+      pnkd numeric DEFAULT NULL::numeric, 
+      
+      pcowd character varying DEFAULT NULL::character varying,
+      pcfr  character varying DEFAULT NULL::character varying,
+
+      pprc numeric DEFAULT NULL::numeric, 
+      pndtn_a numeric DEFAULT NULL::numeric, 
+      pdoutfd date DEFAULT NULL::date
+   )
 RETURNS 
    character varying
 AS 
@@ -1717,9 +1755,12 @@ BEGIN
      --end(20 0324)
                         
       if pMPurch = 0 /*and pMOSum > 0 */ then -- покупка полной просрочки по ОД
+         
          update cdp_i set mcdpsum = 0  where ncdpAgrID = AgrID;
          delete from cdr_i  where ncdrAgrID = AgrID;
+
          insert into cdr_i(ncdragrid, icdrpart, mcdrsum, dcdrdate, dcdrexist) values(AgrID, 1, 0, to_date(pDPurch), to_date('01.01.1901') ) ;
+
          update cda set mcdatotal=0, dcdalineend=pDPurch where ncdaagrid=AgrID;
          update cdh set ccdhCVAL=TO_CHAR(pDPurch,'DD.MM.YYYY') where ncdhagrid=AgrID AND ccdhTERM='DEND';
          --commit work;
@@ -1733,7 +1774,7 @@ BEGIN
    else
 
       -- dbms_output.put_line(' ERROR - '||SQLERRM);
-      raise debug ' ERROR - %', SQLERRM;
+      raise debug ' ERROR - %', 'SQLERRM';
 
       if New_AgrZ_Res is NULL then
 
