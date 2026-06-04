@@ -11,6 +11,7 @@ CREATE OR REPLACE PACKAGE CDCes
    c_Const_Prefix  CONSTANT VARCHAR := ML2.GetText ('cdces.c_Const_Prefix', 'CD Учет приобретения прав требования'); 
    c_Error_Code    CONSTANT VARCHAR := '50200'; 
    cVersion        CONSTANT VARCHAR := ' $Id: cdces.sql 65189 2024-11-02 11:38:59Z ant $';
+   cPkg_Name       CONSTANT VARCHAR := 'CDCes';
 
    -- Lora
    isCDE           VARCHAR(10);  -- Флаг для ядра, показывает что удаление проводки инициировано кредитным модулем
@@ -21,7 +22,7 @@ CREATE OR REPLACE PACKAGE CDCes
    ActivMode      char(1) := 'R'; -- локальный флаг формирования действий "реально/декларативно"
 
 BEGIN
-   RAISE DEBUG 'Package "mi_mbus" - % - initialized', cVersion;
+   RAISE DEBUG 'Package "%" - % - initialized', cPkg_Name, cVersion;
 END;
 $init$
 
@@ -41,7 +42,7 @@ DECLARE
   GStr   VARCHAR;
 BEGIN
 
-   raise debug 'BA2Cus2BA2 started with CusNum = %s and with old BA2 = %s', $2::varchar, $1::varchar; 
+   raise debug 'BA2Cus2BA2 started with CusNum = % and with old BA2 = %', $2::varchar, $1::varchar; 
 
    CALL cdces.CusCG2BA1( CusNum, NewBA1, ErrMsg, GStr);
 
@@ -1047,7 +1048,7 @@ BEGIN
 
    $2 := null;
 
-   RAISE debug 'Cus2BA1 started with $1 = %s', $1::varchar;
+   RAISE debug 'Cus2BA1 started with $1 = %', $1::varchar;
 
    OPEN Get_CG; 
       FETCH Get_CG INTO CurCus_CG; 
@@ -1059,7 +1060,7 @@ BEGIN
    END IF;
 
    -- DBMS_OUTPUT.PUT_LINE( 'Настройки для клиента ' ||$1)||'  '||CurCus_CG.CGStr );
-   RAISE debug 'Настройки для клиента %s %s', $1::varchar, CurCus_CG.CGStr;
+   RAISE debug 'Настройки для клиента % %', $1::varchar, CurCus_CG.CGStr;
 
    $4 := CurCus_CG.CGStr;
 
@@ -1416,22 +1417,6 @@ $procedure$
 
 
 /* */
-CREATE FUNCTION fdbms_put(messer character varying)
-RETURNS 
-   void
-AS
-$function$
-#package 
-BEGIN
-   IF isDBMS THEN 
-      -- RAISE DEBUG USING MESSAGE := Messer; 
-        RAISE INFO USING MESSAGE := Messer; 
-   END IF;
-END;
-$function$
-
-
-/* */
 CREATE PROCEDURE generate_acc_cd2(IN key20_cb character, IN icd2otd numeric, IN icd2ter numeric, IN consacc character, IN cd2_list cd2[], IN rid_list character varying[])
 AS 
 $procedure$
@@ -1448,7 +1433,7 @@ declare
 
 BEGIN
 
-   raise debug 'generate_Acc: cnt=%d', array_length($5,1);
+   raise debug 'generate_Acc: cnt=%', array_length($5,1);
 
     -- dbms_output.put_line('generate_Acc: cnt=' || l_cd2List.Count );
     if $1 = 'Y' then
@@ -1646,7 +1631,7 @@ BEGIN
 
    call CD.Set_LSDate(pDPurch); -- для заявк и 136155
 
-   IF ppDSign IS NULL THEN ppDSign := CD.Get_LSDate(); END IF;
+   ppDSign := coalesce( pDSign, CD.Get_LSDate() );
 
    IF NVL(pNTimeD,0)=0 AND NVL(pNTimeY,0)=0 AND NVL(pNTimeM,0)=0 THEN
       NULL;--dEnd := NULL;
@@ -1657,7 +1642,7 @@ BEGIN
    END IF;
 
   -- dbms_output.put_line('dEnd = '||dEnd);
-   raise debug 'dEnd = %s ', dEnd::varchar;
+   raise debug 'dEnd = %', dEnd::varchar;
 
    OPEN Get_MDA; 
       FETCH Get_MDA INTO MDA_Terms; 
@@ -1672,7 +1657,7 @@ BEGIN
    New_AgrZ_Res := cdagr.NewAgrZ (AgrID, AgrSUM, Pay_Sum, MDA_Num, curclum, CurCliAcc, CurStatus, pZID, dEnd, pAGRMNT, pNUMARCHIV, pPRC );
 
    --dbms_output.put_line('New_AgrZ_Res = '||New_AgrZ_Res);
-   raise debug 'New_AgrZ_Res = %s', New_AgrZ_Res;
+   raise debug 'New_AgrZ_Res = %', New_AgrZ_Res;
 
    --  pMOSum приходит пустая, в формате есть суммы просрочки только по частям, общей нет  ---
    IF pMPurch = 0 /*AND pMOSum > 0*/ THEN AgrSUM :=1; END IF; -- для покупки полной просрочки по ОД
@@ -1689,8 +1674,11 @@ BEGIN
   
    update cda2 set MCDA2SUM=pMPurch, MCDA2ISUM=pMISum, MCDA2OSUM=pMOSum, MCDA2OISUM=pMOISum, MCDA2FASUM=pMFASum, MCDA2FISUM=pMFISum, MCDA2I2SUM=pMI2Sum, MCDA2OI2SUM=pMOI2Sum,
                   MCDA2BONSUM=pMBONSum, CCDA2OWD_L=pCOWD, MCDA2AGRSUM=CD_Sum, DCDA2AGRDATE=pDSign,
-                  ICDA2SUMFR=NVL(SUBSTR(pcFR,1,1),0), ICDA2IFR=NVL(SUBSTR(pcFR,3,1),0), ICDA2OFR=NVL(SUBSTR(pcFR,2,1),0), ICDA2OIFR=NVL(SUBSTR(pcFR,4,1),0), ICDA2I2FR=NVL(SUBSTR(pcFR,5,1),0), ICDA2OI2FR=NVL(SUBSTR(pcFR,6,1),0), ICDA2FAFR=NVL(SUBSTR(pcFR,7,1),0), ICDA2FIFR=NVL(SUBSTR(pcFR,8,1),0), ICDA2CFR=NVL(SUBSTR(pcFR,9,1),0),
-                  NCDA2DTN_A=pNDTN_A, DCDA2OUTFDATE_С=pDOUTFD  where ncda2agrid=AgrID;
+                  ICDA2SUMFR=NVL(SUBSTR(pcFR,1,1),0), ICDA2IFR=NVL(SUBSTR(pcFR,3,1),0), ICDA2OFR=NVL(SUBSTR(pcFR,2,1),0), ICDA2OIFR=NVL(SUBSTR(pcFR,4,1),0), ICDA2I2FR=NVL(SUBSTR(pcFR,5,1),0), 
+                  ICDA2OI2FR=NVL(SUBSTR(pcFR,6,1),0), ICDA2FAFR=NVL(SUBSTR(pcFR,7,1),0), ICDA2FIFR=NVL(SUBSTR(pcFR,8,1),0), ICDA2CFR=NVL(SUBSTR(pcFR,9,1),0),
+                  NCDA2DTN_A=pNDTN_A, 
+                  DCDA2OUTFDATE_C=pDOUTFD  
+                  where ncda2agrid=AgrID;
 
    IF pNCesType IN(1,2) THEN call CD.Update_History(AgrID::numeric, 1::numeric, 'DISCRATE', pDPurch, NULL::numeric, pNKD::numeric, pNCesType, NULL::varchar, null::int8 ); END IF;
         --IF NVL(pMBONSum,0)>0 THEN CD.Update_History(AgrID, 1, 'DISCRATE', pDPurch, NULL, NULL, 2, NULL); END IF;
@@ -1721,7 +1709,7 @@ BEGIN
    else
 
       -- dbms_output.put_line(' ERROR - '||SQLERRM);
-      raise debug ' ERROR - %s', 'SQLERRM';
+      raise debug ' ERROR - %', 'SQLERRM';
 
       if New_AgrZ_Res is NULL then
 
@@ -1785,7 +1773,7 @@ BEGIN
       FETCH Get_CDA INTO CDA_Terms; 
          CLOSE Get_CDA;
 
-   raise debug 'Обработка части № %d', NewPart.Part;
+   raise debug 'Обработка части № %', NewPart.Part;
 
    IF ( (coalesce(NewPart.pMSum,0)+coalesce(NewPart.pMI,0)+coalesce(NewPart.pMO,0)+coalesce(NewPart.pMOI,0)+coalesce(NewPart.pMFA,0)+coalesce(NewPart.pMFI,0)+coalesce(NewPart.pMI2,0)+coalesce(NewPart.pMOI2,0)+coalesce(NewPart.pMC,0) > 0)
      or 
@@ -1809,10 +1797,9 @@ BEGIN
                                   NewPart.pISPROL  -- флаг "транш-пролонгция"  --(21 0921)
                                    );
       IF ErM = 'OK' THEN
-         raise debug 'Часть № %d создана', NewPart.Part;
-         -- commit work; перенесено в autoCommit
+         RAISE DEBUG 'Часть № % создана', NewPart.Part;
       ELSE
-         return ErM;
+         RETURN coalesce(nullif(ErrMsg, ''), ErM);
       END IF;
 
    end if;
@@ -1864,7 +1851,7 @@ BEGIN
          RETURN ErrMsg;
      END IF;
    ELSE
-      raise debug 'Часть № %d нет выкупленных сумм', NewPart.Part;
+      raise debug 'Часть № % нет выкупленных сумм', NewPart.Part;
       -- dbms_output.put_line('Часть №'||NewPart.Part||' нет выкупленных сумм');
    END IF;
 
@@ -2001,7 +1988,7 @@ BEGIN
    IF Sale_Terms.CCDSALEOBLACC IS NOT NULL THEN
       Obl_Acc_Rst:= ABS(UTIL_DM2.Acc_Ost(0,Sale_Terms.CCDSALEOBLACC,Sale_Terms.CCDSALEOBLCUR,Date_Act+1,'V'));
       -- INSERT INTO CAP(ccapMESSAGE) VALUES('Счет обязательств '||Sale_Terms.CCDSALEOBLACC||' остаток '||to_char(Obl_Acc_Rst)||CHR(10));
-      call CDCes.cap_Message( 'Счет обязательств %s остаток %s'::varchar, Sale_Terms.CCDSALEOBLACC, to_char(Obl_Acc_Rst) );
+      call CDCes.cap_Message( 'Счет обязательств % остаток %'::varchar, Sale_Terms.CCDSALEOBLACC, to_char(Obl_Acc_Rst) );
    END IF; 
 
    IF Sale_Terms.CCDSALEACC IS NOT NULL THEN
@@ -2250,7 +2237,7 @@ BEGIN
         LOOP
 
 -- DBMS_OUTPUT.put_line('!!! CD_CDO_CES !!! Cur_Pmnt.Mcdesum = '||Cur_Pmnt.Mcdesum||' Cur_Pmnt.dcdedate = '||Cur_Pmnt.dcdedate );
-RAISE DEBUG '!!! CD_CDO_CES !!! Cur_Pmnt.Mcdesum = %s,  Cur_Pmnt.dcdedate = %s ', Cur_Pmnt.Mcdesum::varchar, Cur_Pmnt.dcdedate::varchar; 
+RAISE DEBUG '!!! CD_CDO_CES !!! Cur_Pmnt.Mcdesum = %,  Cur_Pmnt.dcdedate = % ', Cur_Pmnt.Mcdesum::varchar, Cur_Pmnt.dcdedate::varchar; 
 
             RestPmnt := Cur_Pmnt.Mcdesum;
             FOR Cur_Ovd IN Get_CDOCES('A',Cur_Part.Num) 
@@ -2262,7 +2249,7 @@ RAISE DEBUG '!!! CD_CDO_CES !!! Cur_Pmnt.Mcdesum = %s,  Cur_Pmnt.dcdedate = %s '
                 RestPmnt := RestPmnt - Cur_Ovd.Mcdocesoverdue;
         
         --DBMS_OUTPUT.put_line('!!! CD_CDO_CES !!! NewOvd = '||NewOvd );
-                RAISE DEBUG '!!! CD_CDO_CES !!! NewOvd = %s', NewOvd::varchar; 
+                RAISE DEBUG '!!! CD_CDO_CES !!! NewOvd = %', NewOvd::varchar; 
         
                 INSERT INTO xxi.CD_CDO_CES(ncdocesagrid,  icdocespart,         dcdocesstart,       dcdocesdate, ccdocestype, mcdocesoverdue )
                     VALUES( $1, Cur_Part.Num, Cur_Ovd.dcdocesSTART, Cur_Pmnt.dcdeDate+1,         'A',         NewOvd );
@@ -2327,9 +2314,9 @@ AS
    $procedure$
 BEGIN
    -- dbms_output.put_line('Reg_SLEvent function called on #'||MAgrID||'.');
-   raise debug 'Reg_SLEvent function called on #%s', MAgrID::varchar;
+   raise debug 'Reg_SLEvent function called on #%', MAgrID::varchar;
    -- dbms_output.put_line('  Event details are: TYPE '||evTYPE||', DATE '||evDATE||', SUM '||evSUM||', COMMENT "'||evREM||'"...');
-   raise debug '  Event details are: TYPE %s, DATE %s, SUM %s , COMMENT "%s"...', evTYPE::varchar, evDATE::varchar, evSUM::varchar, evREM;
+   raise debug '  Event details are: TYPE %, DATE %, SUM % , COMMENT "%"...', evTYPE::varchar, evDATE::varchar, evSUM::varchar, evREM;
   -- insert event record
    INSERT INTO CD_SLE (icdsleID, icdsleTYPE, dcdsleDATE, mcdsleSUM, ccdsleREM, icdsleTRNNUM, icdsleTRNANUM)
    VALUES             (MAgrID,   evTYPE,     evDATE,     evSUM,     evREM,     TrnNum,       TrnANum );
