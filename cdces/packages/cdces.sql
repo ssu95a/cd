@@ -1742,12 +1742,27 @@ BEGIN
                   DCDA2OUTFDATE_C=pDOUTFD  
                   where ncda2agrid=AgrID;
 
-   IF pNCesType IN(1,2) THEN call CD.Update_History(AgrID::numeric, 1::numeric, 'DISCRATE', pDPurch, NULL::numeric, pNKD::numeric, pNCesType, NULL::varchar, null::int8 ); END IF;
-        --IF NVL(pMBONSum,0)>0 THEN CD.Update_History(AgrID, 1, 'DISCRATE', pDPurch, NULL, NULL, 2, NULL); END IF;
-        -- commit work;
+   IF pNCesType IN( 1, 2 ) THEN 
+
+      -- CD.Update_History(AgrID::numeric, 1::numeric, 'DISCRATE', pDPurch, NULL::numeric, pNKD::numeric, pNCesType, NULL::varchar, null::int8 ); END IF;
    
+      CALL CDTerms.Update_History(
+         agrid       => AgrID::numeric,
+         part        => 1::numeric,
+         term        => 'DISCRATE',
+         effdate     => pDPurch,
+         mval        => NULL::numeric,
+         pval        => pNKD::numeric,
+         ival0       => pNCesType::bigint,
+         cval        => NULL::varchar,
+         flaghistory => NULL::bigint
+      );
+      
+   end if;
+
      --(20 0324)
       if pAGRMNT is null then
+
          NameAgr := cdterms.ResetNameAgr(AgrID);
          update cda set ccdaagrmnt = NameAgr where ncdaagrid=AgrID;
          -- commit work;
